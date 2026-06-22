@@ -17,9 +17,13 @@ import os
 import time
 from urllib.parse import urlparse
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
+from slowapi import Limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 # Node functions (called directly so we can cache between steps)
 from backend.nodes.aggregate import aggregate
@@ -51,6 +55,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+
+@app.exception_handler(RateLimitExceeded)
+async def custom_rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"error": "Rate limit exceeded. Please wait."},
+    )
 
 
 @app.on_event("startup")
@@ -95,8 +109,68 @@ async def health() -> dict:
     return {"status": "ok"}
 
 
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy():
+    html_content = """<!DOCTYPE html>
+<html>
+<head>
+    <title>ToS Inspector - Privacy Policy</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #1e293b;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #6366f1;
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        p {
+            line-height: 1.6;
+            font-size: 16px;
+            color: #475569;
+            margin: 15px 0;
+        }
+        .highlight {
+            font-weight: 500;
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Privacy Policy</h1>
+        <p class="highlight">ToS Inspector does not collect or store any personal user data.</p>
+        <p>Analysis is performed on publicly available Terms of Service documents only.</p>
+    </div>
+</body>
+</html>"""
+    return HTMLResponse(content=html_content, status_code=200)
+
+
 @app.post("/analyze")
-async def analyze(request: AnalyzeRequest):
+@limiter.limit("20/hour")
+async def analyze(request: Request, analyze_request: AnalyzeRequest):
     """
     Runs the ToS analysis pipeline and returns a FinalReport.
 
@@ -106,9 +180,9 @@ async def analyze(request: AnalyzeRequest):
     On a cache hit (same ToS content as last time), chunk_and_analyze and
     aggregate are skipped entirely — no LLM calls are made.
     """
-    url = normalize_url(request.url)
+    url = normalize_url(analyze_request.url)
     domain = urlparse(url).netloc
-    logger.info("Starting analysis for: %s (force_refresh=%s)", url, request.force_refresh)
+    logger.info("Starting analysis for: %s (force_refresh=%s)", url, analyze_request.force_refresh)
 
     start = time.time()
 
@@ -140,7 +214,7 @@ async def analyze(request: AnalyzeRequest):
         tos_text = state.get("tos_text", "")
 
         # ── Step 3: Analysis cache check ───────────────────────────────────
-        if not request.force_refresh and tos_text:
+        if not analyze_request.force_refresh and tos_text:
             cached_report = get_cached_analysis(domain, tos_text)
             if cached_report:
                 logger.info(
