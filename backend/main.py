@@ -109,63 +109,27 @@ async def health() -> dict:
     return {"status": "ok"}
 
 
-@app.get("/privacy", response_class=HTMLResponse)
+@app.get("/privacy")
 async def privacy():
-    html_content = """<!DOCTYPE html>
-<html>
-<head>
-    <title>ToS Inspector - Privacy Policy</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: #1e293b;
-            background-color: #f8fafc;
-            margin: 0;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-        .card {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            max-width: 600px;
-            width: 100%;
-        }
-        h1 {
-            color: #6366f1;
-            font-size: 24px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 10px;
-        }
-        p {
-            line-height: 1.6;
-            font-size: 16px;
-            color: #475569;
-            margin: 15px 0;
-        }
-        .highlight {
-            font-weight: 500;
-            color: #0f172a;
-        }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h1>Privacy Policy</h1>
-        <p class="highlight">ToS Inspector does not collect or store any personal user data.</p>
-        <p>Analysis is performed on publicly available Terms of Service documents only.</p>
-    </div>
-</body>
-</html>"""
-    return HTMLResponse(content=html_content, status_code=200)
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse("""
+    <!DOCTYPE html>
+    <html>
+    <head><title>ToS Inspector - Privacy Policy</title></head>
+    <body style="font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px;">
+    <h1>ToS Inspector Privacy Policy</h1>
+    <p>Last updated: June 2026</p>
+    <h2>Data We Collect</h2>
+    <p>ToS Inspector does not collect, store, or share any personal user data. The extension only accesses the URL of the website you choose to analyze.</p>
+    <h2>How It Works</h2>
+    <p>When you click Analyze, the current website's URL is sent to our backend server, which fetches the publicly available Terms of Service page and analyzes it using AI. No personal data, browsing history, or user activity is stored.</p>
+    <h2>Third Parties</h2>
+    <p>Analysis is powered by OpenRouter AI API. Only the Terms of Service text of the requested website is sent for analysis — no user data is included.</p>
+    <h2>Contact</h2>
+    <p>For questions, contact us via the Chrome Web Store support page.</p>
+    </body>
+    </html>
+    """)
 
 
 @app.post("/analyze")
