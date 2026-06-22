@@ -111,25 +111,22 @@ async def health() -> dict:
 
 @app.get("/privacy")
 async def privacy():
-    from fastapi.responses import HTMLResponse
-    return HTMLResponse("""
-    <!DOCTYPE html>
-    <html>
-    <head><title>ToS Inspector - Privacy Policy</title></head>
-    <body style="font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px;">
-    <h1>ToS Inspector Privacy Policy</h1>
-    <p>Last updated: June 2026</p>
-    <h2>Data We Collect</h2>
-    <p>ToS Inspector does not collect, store, or share any personal user data. The extension only accesses the URL of the website you choose to analyze.</p>
-    <h2>How It Works</h2>
-    <p>When you click Analyze, the current website's URL is sent to our backend server, which fetches the publicly available Terms of Service page and analyzes it using AI. No personal data, browsing history, or user activity is stored.</p>
-    <h2>Third Parties</h2>
-    <p>Analysis is powered by OpenRouter AI API. Only the Terms of Service text of the requested website is sent for analysis — no user data is included.</p>
-    <h2>Contact</h2>
-    <p>For questions, contact us via the Chrome Web Store support page.</p>
-    </body>
-    </html>
-    """)
+    return HTMLResponse("""<!DOCTYPE html>
+<html>
+<head><title>ToS Inspector - Privacy Policy</title></head>
+<body style="font-family:sans-serif;max-width:800px;margin:40px auto;padding:0 20px">
+<h1>ToS Inspector Privacy Policy</h1>
+<p>Last updated: June 2026</p>
+<h2>Data We Collect</h2>
+<p>ToS Inspector does not collect, store, or share any personal user data. The extension only accesses the URL of the website you choose to analyze.</p>
+<h2>How It Works</h2>
+<p>When you click Analyze, the current website URL is sent to our backend, which fetches the publicly available Terms of Service page and analyzes it using AI. No personal data, browsing history, or user activity is stored or logged.</p>
+<h2>Third Parties</h2>
+<p>Analysis is powered by OpenRouter AI API. Only the Terms of Service text of the requested website is sent for analysis. No user data is included.</p>
+<h2>Contact</h2>
+<p>For questions, contact us via the Chrome Web Store support page.</p>
+</body>
+</html>""")
 
 
 @app.post("/analyze")
