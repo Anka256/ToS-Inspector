@@ -1,0 +1,5 @@
+- venv is at /home/the_architect/Desktop/My AR-GE/ToS Inspector/venv
+- Activate with: source venv/bin/activate
+- Run backend: uvicorn backend.main:app --reload --port 8000
+- Copy .env.example to .env and add your OPENROUTER_API_KEY
+- Load extension from: extension/ folder in Chrome (chrome://extensions → Load unpacked)

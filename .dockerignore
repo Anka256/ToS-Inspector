@@ -1,0 +1,13 @@
+.env
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+backend/data/url_cache.json
+backend/data/analysis_cache.json
+extension/
+*.md
+.git
+.gitignore

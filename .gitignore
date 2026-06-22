@@ -1,0 +1,13 @@
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.env
+
+# Cache files
+data/url_cache.json
+data/analysis_cache.json
+backend/data/url_cache.json
+backend/data/analysis_cache.json
