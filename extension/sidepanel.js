@@ -1,6 +1,6 @@
 // sidepanel.js — ToS Inspector Side Panel Logic
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = "https://tos-inspector-production.up.railway.app";
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
